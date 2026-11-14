@@ -55,7 +55,8 @@ export default function Dashboard({
         date: item.formattedDate || 'Baru saja',
         score: item.score || 0,
         finalResult: item.finalResult,
-        userData: item.userData
+        userData: item.userData,
+        chatHistory: item.chatHistory || []
       }));
     }
     return [];

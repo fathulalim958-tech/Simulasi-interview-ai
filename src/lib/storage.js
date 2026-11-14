@@ -32,10 +32,10 @@ export function getInterviewHistory() {
 
 /**
  * Menyimpan sesi interview baru ke riwayat
- * @param {Object} session Data sesi (userData, finalResult, durationSeconds)
+ * @param {Object} session Data sesi (userData, finalResult, durationSeconds, chatHistory)
  * @returns {Object} Data sesi tersimpan
  */
-export function saveInterviewSession({ userData, finalResult, durationSeconds = 180 }) {
+export function saveInterviewSession({ userData, finalResult, durationSeconds = 180, chatHistory = [] }) {
   try {
     const history = getInterviewHistory();
     const score = Number(finalResult?.score) || 0;
@@ -61,7 +61,8 @@ export function saveInterviewSession({ userData, finalResult, durationSeconds = 
       status: statusLabel,
       durationSeconds,
       finalResult,
-      userData
+      userData,
+      chatHistory: Array.isArray(chatHistory) ? chatHistory : []
     };
 
     const updated = [newRecord, ...history];

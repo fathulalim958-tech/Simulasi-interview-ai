@@ -311,6 +311,314 @@
   color: #ffffff;
 }
 
+/* ==========================================================================
+   Transcript Section: Rekaman Dialog Wawancara
+   ========================================================================== */
+.transcript-section {
+  margin-top: 30px;
+  background: rgba(11, 17, 32, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 22px 24px;
+  transition: all 0.3s ease;
+}
+
+.transcript-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.transcript-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.transcript-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.transcript-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
+}
+
+.transcript-subtitle {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin: 3px 0 0 0;
+}
+
+.transcript-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-copy-transcript {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copy-transcript:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.btn-copy-transcript .icon-success {
+  color: #10b981;
+}
+
+.btn-toggle-transcript {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 8px;
+  color: #a5b4fc;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-toggle-transcript:hover {
+  background: rgba(99, 102, 241, 0.22);
+  color: #ffffff;
+}
+
+.transcript-body {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.transcript-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.transcript-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.transcript-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+.transcript-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.transcript-empty {
+  padding: 24px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.transcript-bubbles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.transcript-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Chat Elon Musk (Pewawancara): Rata Kiri ala WhatsApp */
+.transcript-row.row-ai {
+  align-items: flex-start;
+}
+
+.transcript-row.row-ai .transcript-avatar-badge {
+  justify-content: flex-start;
+}
+
+/* Chat Kandidat (User): Rata Kanan ala WhatsApp */
+.transcript-row.row-user {
+  align-items: flex-end;
+}
+
+.transcript-row.row-user .transcript-avatar-badge {
+  justify-content: flex-end;
+}
+
+.transcript-avatar-badge {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.avatar-chip.ai-chip {
+  background: rgba(99, 102, 241, 0.18);
+  color: #c7d2fe;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.avatar-chip.user-chip {
+  background: rgba(16, 185, 129, 0.18);
+  color: #a7f3d0;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.transcript-bubble {
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  max-width: 82%;
+  box-sizing: border-box;
+  word-break: break-word;
+  transition: all 0.2s ease;
+}
+
+/* Gelembung Percakapan Elon Musk (Sisi Kiri, Sudut Kiri Bawah Runcing) */
+.transcript-bubble.bubble-ai {
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #e2e8f0;
+  border-left: 3px solid #6366f1;
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* Gelembung Percakapan Kandidat (Sisi Kanan, Sudut Kanan Bawah Runcing ala WhatsApp) */
+.transcript-bubble.bubble-user {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.75), rgba(4, 47, 46, 0.85));
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #f8fafc;
+  border-right: 3px solid #10b981;
+  border-left: none;
+  border-radius: 16px 16px 4px 16px;
+  box-shadow: 0 2px 10px rgba(6, 78, 59, 0.3);
+}
+
+.bubble-message-text {
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* ==========================================================================
+   Print Styles: Print Evaluasi & PDF
+   ========================================================================== */
+@media print {
+  body, .result-container {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+  }
+  .result-card-wrapper {
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  .result-title-group h1 {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+  }
+  .evaluator-tag {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+  }
+  .score-overview-section {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  .score-number, .score-headline {
+    color: #0f172a !important;
+  }
+  .analysis-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    break-inside: avoid;
+  }
+  .eval-list li {
+    background: #f8fafc !important;
+    color: #334155 !important;
+  }
+  .transcript-section {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    break-inside: avoid;
+  }
+  .transcript-body {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .transcript-row.row-ai {
+    align-items: flex-start !important;
+  }
+  .transcript-row.row-user {
+    align-items: flex-end !important;
+  }
+  .transcript-bubble.bubble-ai {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    border-left: 3px solid #6366f1 !important;
+    border-radius: 12px 12px 12px 3px !important;
+    max-width: 82% !important;
+  }
+  .transcript-bubble.bubble-user {
+    background: #ecfdf5 !important;
+    color: #064e3b !important;
+    border: 1px solid #a7f3d0 !important;
+    border-right: 3px solid #10b981 !important;
+    border-left: none !important;
+    border-radius: 12px 12px 3px 12px !important;
+    max-width: 82% !important;
+  }
+  .result-actions, .transcript-actions {
+    display: none !important;
+  }
+}
+
 @media (max-width: 768px) {
   .result-card-wrapper {
     padding: 24px 20px;

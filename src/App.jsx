@@ -72,7 +72,8 @@ function App() {
     saveInterviewSession({
       userData,
       finalResult: result,
-      durationSeconds: Math.max(180, chatHistory.length * 45)
+      durationSeconds: Math.max(180, chatHistory.length * 45),
+      chatHistory
     });
     setFinalResult(result);
     setPage('result');
@@ -235,7 +236,8 @@ function App() {
       saveInterviewSession({
         userData,
         finalResult: zeroResult,
-        durationSeconds: 15
+        durationSeconds: 15,
+        chatHistory
       });
 
       setFinalResult(zeroResult);
@@ -252,7 +254,8 @@ function App() {
       saveInterviewSession({
         userData,
         finalResult: evaluation.finalResult,
-        durationSeconds: Math.max(30, chatHistory.length * 30)
+        durationSeconds: Math.max(30, chatHistory.length * 30),
+        chatHistory
       });
       setFinalResult(evaluation.finalResult);
       setPage('result');
@@ -263,6 +266,7 @@ function App() {
   const handleViewHistoricalResult = (record) => {
     setUserData(record.userData || { name: record.candidateName, position: record.position });
     setFinalResult(record.finalResult);
+    setChatHistory(record.chatHistory || []);
     setPage('result');
   };
 
@@ -313,6 +317,7 @@ function App() {
           onRestart={handleRestartInterview} 
           onBackToDashboard={handleBackToDashboard}
           userData={userData}
+          chatHistory={chatHistory}
         />
       )}
     </div>
