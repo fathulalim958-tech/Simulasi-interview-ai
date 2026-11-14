@@ -35,7 +35,10 @@ export function stripLeadingNumbering(text) {
   if (!text) return '';
   return text
     .replace(/^\s*(?:pertanyaan|soal|nomor|no)?\s*\d+[.:)-]?\s*/i, '')
-    .replace(/^\s*pertanyaan\s*(?:ke-?\d+|pertama|kedua|ketiga|keempat|kelima)[.:)]?\s*/i, '')
+    .replace(/^\s*pertanyaan\s*(?:ke-?\d+|pertama|kedua|ketiga|keempat|kelima|keenam|ketujuh)[.:)]?\s*/i, '')
+    // Hapus catatan meta dalam kurung atau tanda kurung siku (seperti "(Waiting for your response to the final question.)")
+    .replace(/\s*\([^)]*(?:waiting|menunggu|response|respon|final|terakhir|question|pertanyaan|catatan|note)[^)]*\)/gi, '')
+    .replace(/\s*\[[^\]]*(?:waiting|menunggu|response|respon|final|terakhir|question|pertanyaan|catatan|note)[^\]]*\]/gi, '')
     .trim();
 }
 

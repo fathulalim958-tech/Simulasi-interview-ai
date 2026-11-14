@@ -1,5 +1,5 @@
 import React from 'react';
-import { History, Award, ArrowRight, PlayCircle, Clock, Trash2 } from 'lucide-react';
+import { History, Award, ArrowRight, Clock, Trash2, PlayCircle } from 'lucide-react';
 
 export default function InterviewHistory({ 
   history = [], 
@@ -10,23 +10,34 @@ export default function InterviewHistory({
   showAll = false
 }) {
   const formatDuration = (seconds = 180) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const s = Number(seconds) || 180;
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
     return `${mins}m ${secs}d`;
   };
 
-  const displayedHistory = showAll ? history : history.slice(0, 5);
+  const safeList = Array.isArray(history) ? history : [];
+  const displayedHistory = showAll ? safeList : safeList.slice(0, 5);
 
   const handleDeleteItem = (e, item) => {
     e.stopPropagation();
-    if (window.confirm(`Hapus riwayat sesi ${item.position} (${item.formattedDate})?`)) {
-      onDeleteHistory?.(item.id);
+    const pos = item?.position || item?.title || 'Sesi';
+    if (window.confirm(`Hapus riwayat sesi ${pos}?`)) {
+      onDeleteHistory?.(item?.id);
     }
   };
 
   const handleClearAllItems = () => {
     if (window.confirm("Apakah Anda yakin ingin menghapus seluruh riwayat interview? Data yang dihapus tidak dapat dipulihkan.")) {
       onClearAll?.();
+    }
+  };
+
+  const handleView = (item) => {
+    if (item?.finalResult && onViewResult) {
+      onViewResult(item);
+    } else if (onStartInterview) {
+      onStartInterview();
     }
   };
 
@@ -44,7 +55,7 @@ export default function InterviewHistory({
         </div>
 
         <div className="history-header-actions">
-          {history.length > 0 && onClearAll && (
+          {displayedHistory.length > 0 && onClearAll && (
             <button 
               className="btn-clear-history" 
               onClick={handleClearAllItems}
@@ -55,27 +66,30 @@ export default function InterviewHistory({
             </button>
           )}
 
-          {history.length > 0 && onStartInterview && (
-            <button className="view-all-link-btn" onClick={onStartInterview}>
-              + Sesi Baru
+          {onStartInterview && (
+            <button className="view-all-link-btn" onClick={onStartInterview} title="Mulai Sesi Wawancara Baru">
+              <PlayCircle size={14} />
+              <span>+ Wawancara Baru</span>
             </button>
           )}
         </div>
       </div>
 
-      {history.length === 0 ? (
+      {displayedHistory.length === 0 ? (
         <div className="history-empty-state">
           <div className="empty-state-icon-circle">
-            <History size={36} />
+            <History size={32} />
           </div>
-          <h3 className="empty-state-title">Belum ada riwayat interview</h3>
+          <h3 className="empty-state-title">tidak ada riwayat interview</h3>
           <p className="empty-state-desc">
-            Mulai simulasi pertamamu sekarang bersama Alex Rivera untuk melihat analisis skor dan evaluasi kompetensi kerja Anda!
+            Belum ada rekam jejak simulasi wawancara yang tersimpan. Mulai wawancara baru untuk melihat riwayat dan hasil evaluasi AI di sini.
           </p>
-          <button className="empty-state-action-btn" onClick={onStartInterview}>
-            <PlayCircle size={18} />
-            <span>Mulai Simulasi Pertamamu</span>
-          </button>
+          {onStartInterview && (
+            <button className="empty-state-action-btn" onClick={onStartInterview}>
+              <PlayCircle size={16} />
+              <span>Mulai Wawancara Baru</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="history-table-wrapper">
@@ -91,27 +105,33 @@ export default function InterviewHistory({
               </tr>
             </thead>
             <tbody>
-              {displayedHistory.map((item) => {
-                const score = Number(item.score) || 0;
+              {displayedHistory.map((item, idx) => {
+                const score = Number(item?.score) || 0;
                 let scoreBadgeClass = "badge-score-low";
                 if (score >= 80) scoreBadgeClass = "badge-score-high";
                 else if (score >= 65) scoreBadgeClass = "badge-score-mid";
 
+                const itemId = item?.id || `item_${idx}`;
+                const pos = item?.position || item?.title || 'Simulasi Interview';
+                const name = item?.candidateName || 'budi';
+                const dateText = item?.formattedDate || item?.date || 'Baru saja';
+                const statusText = item?.status || (score >= 80 ? 'Sangat Direkomendasikan' : score >= 65 ? 'Direkomendasikan' : 'Perlu Latihan');
+
                 return (
-                  <tr key={item.id} className="history-row">
+                  <tr key={itemId} className="history-row">
                     <td>
                       <div className="position-cell">
-                        <span className="position-name">{item.position}</span>
-                        <span className="candidate-subname">{item.candidateName}</span>
+                        <span className="position-name">{pos}</span>
+                        <span className="candidate-subname">{name}</span>
                       </div>
                     </td>
                     <td>
-                      <span className="date-cell-text">{item.formattedDate}</span>
+                      <span className="date-cell-text">{dateText}</span>
                     </td>
                     <td>
                       <span className="duration-pill">
                         <Clock size={12} />
-                        {formatDuration(item.durationSeconds)}
+                        {formatDuration(item?.durationSeconds)}
                       </span>
                     </td>
                     <td>
@@ -121,13 +141,13 @@ export default function InterviewHistory({
                       </div>
                     </td>
                     <td>
-                      <span className="status-tag-cell">{item.status}</span>
+                      <span className="status-tag-cell">{statusText}</span>
                     </td>
                     <td className="text-right">
                       <div className="history-row-actions">
                         <button 
                           className="btn-view-result"
-                          onClick={() => onViewResult(item)}
+                          onClick={() => handleView(item)}
                           title="Buka Halaman Evaluasi Lengkap"
                         >
                           <span>Lihat Hasil</span>

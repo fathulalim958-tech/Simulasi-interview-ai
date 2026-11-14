@@ -33,6 +33,9 @@ const isZeroExperience = (exp) => {
 
 function App() {
   const [page, setPage] = useState('dashboard'); // Alur awal: Dashboard
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('devinterview_theme') || 'dark';
+  });
   const [userData, setUserData] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState('');
@@ -41,6 +44,39 @@ function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [networkError, setNetworkError] = useState(null);
   const [pendingAnswer, setPendingAnswer] = useState(null);
+  const [isClosingSession, setIsClosingSession] = useState(false);
+  const [pendingFinalResult, setPendingFinalResult] = useState(null);
+
+  // Efek sinkronisasi tema Light / Dark di level HTML & Body
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('devinterview_theme', theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  // Fungsi transisi akhir setelah kalimat penutup Elon selesai dibacakan
+  const handleCompleteInterview = React.useCallback((resultToSave = null) => {
+    const result = resultToSave || pendingFinalResult;
+    if (!result) return;
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+    setIsClosingSession(false);
+
+    saveInterviewSession({
+      userData,
+      finalResult: result,
+      durationSeconds: Math.max(180, chatHistory.length * 45)
+    });
+    setFinalResult(result);
+    setPage('result');
+  }, [pendingFinalResult, userData, chatHistory]);
 
   const fetchAIResponse = async (userAnswer = null, isInitial = false) => {
     setIsLoadingAI(true);
@@ -69,14 +105,22 @@ function App() {
         canRetry: true
       });
     } else if (response.finalResult) {
-      setFinalResult(response.finalResult);
-      // Simpan hasil evaluasi ke penyimpanan riwayat lokal
-      saveInterviewSession({
-        userData,
-        finalResult: response.finalResult,
-        durationSeconds: Math.max(180, chatHistory.length * 45)
-      });
-      setPage('result');
+      // HRD Elon Musk membacakan ucapan penutup realistis sebelum beralih ke halaman hasil
+      const candidateName = userData?.name || 'Kandidat';
+      const closings = [
+        `Baik, terima kasih banyak atas waktu dan jawaban yang Anda berikan, ${candidateName}. Pertanyaan dari saya sudah cukup untuk menilai kompetensi teknis dan pemecahan masalah Anda. Sekarang saya sedang menyusun lembar evaluasi akhir Anda. Mari kita lihat hasilnya bersama.`,
+        `Terima kasih ${candidateName}. Pemaparan Anda hari ini sangat lugas dan terstruktur. Semua aspek yang saya butuhkan sudah tercatat dengan lengkap. Saya akan mengompilasi hasil penilaian wawancara Anda sekarang. Mari kita tinjau evaluasinya.`,
+        `Bagus sekali, ${candidateName}. Diskusi kita hari ini memberi saya gambaran yang sangat jelas mengenai keahlian dan cara berpikir Anda. Sesi wawancara telah selesai, dan laporan evaluasi performa Anda siap ditampilkan sekarang.`
+      ];
+      const chosenClosing = closings[Math.floor(Math.random() * closings.length)];
+
+      setPendingFinalResult(response.finalResult);
+      setIsClosingSession(true);
+      setCurrentQuestion(chosenClosing);
+      setChatHistory(prev => isInitial ?
+        [{ sender: 'assistant', message: chosenClosing }] :
+        [...prev, { sender: 'user', message: userAnswer }, { sender: 'assistant', message: chosenClosing }]
+      );
     } else if (response.question) {
       // Pastikan pertanyaan bersih dari angka nomor urut (seperti "1. ", "Pertanyaan 2:")
       const cleanQuestion = stripLeadingNumbering(response.question);
@@ -112,16 +156,16 @@ function App() {
     // Salam pembuka disesuaikan secara cerdas:
     // Jika TIDAK ADA pengalaman kerja / fresh graduate -> JANGAN tanya pengalaman kerja, fokus ke motivasi, pendidikan & proyek
     const freshGradGreetings = [
-      `Halo ${data.name}, selamat datang. Saya Alex Rivera dari TechCorp. Mari kita mulai wawancara untuk posisi ${data.position}. Sebagai kandidat fresh graduate, ceritakan motivasi Anda memilih posisi ini dan proyek tugas akhir atau portofolio yang pernah Anda kembangkan.`,
-      `Selamat datang ${data.name}. Senang bertemu dengan Anda hari ini untuk posisi ${data.position}. Silakan perkenalkan diri Anda, latar belakang pendidikan, serta keahlian utama yang Anda miliki.`,
+      `Halo ${data.name}, selamat datang. Saya Elon Musk. Mari kita mulai wawancara untuk posisi ${data.position}. Sebagai fresh graduate, ceritakan motivasi Anda dan proyek paling menantang yang pernah Anda kembangkan.`,
+      `Selamat datang ${data.name}. Saya Elon Musk. Senang bertemu dengan Anda untuk posisi ${data.position}. Silakan perkenalkan diri Anda, latar belakang pendidikan, serta keahlian teknis utama yang Anda miliki.`,
       `Halo ${data.name}, terima kasih telah hadir untuk posisi ${data.position}. Silakan mulai dengan menceritakan bidang keahlian yang paling Anda minati serta alasan Anda tertarik berkarier di bidang ini.`
     ];
 
-    // Jika MEMILIKI pengalaman kerja nyata -> Tanyakan latar belakang profesional
+    // Jika MEMILIKI pengalaman kerja nyata -> Tanyakan masalah teknis & kontribusi nyata
     const experiencedGreetings = [
-      `Halo ${data.name}, selamat datang. Saya Alex Rivera dari TechCorp. Mari kita mulai wawancara untuk posisi ${data.position}. Silakan ceritakan tentang diri dan pengalaman relevan Anda.`,
-      `Selamat datang ${data.name}. Saya senang bertemu Anda hari ini untuk posisi ${data.position}. Bisakah Anda memperkenalkan latar belakang profesional dan keahlian utama Anda?`,
-      `Halo ${data.name}, terima kasih telah meluangkan waktu untuk posisi ${data.position}. Silakan mulai dengan menceritakan pengalaman kerja Anda yang paling berkesan.`
+      `Halo ${data.name}, selamat datang. Saya Elon Musk. Mari kita bahas posisi ${data.position}. Ceritakan masalah teknis paling sulit yang pernah Anda hadapi dan bagaimana Anda memecahkannya.`,
+      `Selamat datang ${data.name}. Saya senang bertemu dengan Anda hari ini untuk posisi ${data.position}. Bisakah Anda memperkenalkan latar belakang profesional dan keahlian utama Anda?`,
+      `Halo ${data.name}, terima kasih telah meluangkan waktu untuk posisi ${data.position}. Silakan mulai dengan menceritakan pengalaman kerja Anda yang paling berdampak.`
     ];
 
     const greetingsPool = noExperience ? freshGradGreetings : experiencedGreetings;
@@ -143,6 +187,8 @@ function App() {
     setFinalResult(null);
     setNetworkError(null);
     setPendingAnswer(null);
+    setIsClosingSession(false);
+    setPendingFinalResult(null);
   };
 
   const handleBackToDashboard = () => {
@@ -153,6 +199,8 @@ function App() {
     setFinalResult(null);
     setNetworkError(null);
     setPendingAnswer(null);
+    setIsClosingSession(false);
+    setPendingFinalResult(null);
   };
 
   const handleEndInterviewEarly = async () => {
@@ -225,6 +273,8 @@ function App() {
         <Dashboard 
           onStartInterview={() => setPage('form')}
           onViewResult={handleViewHistoricalResult}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
         />
       )}
 
@@ -251,6 +301,8 @@ function App() {
           networkError={networkError}
           onRetryNetworkError={handleRetryLastAnswer}
           onDismissNetworkError={handleDismissNetworkError}
+          isClosingSession={isClosingSession}
+          onFinishClosing={handleCompleteInterview}
         />
       )}
 

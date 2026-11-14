@@ -23,7 +23,7 @@ export function getInterviewHistory() {
     const raw = localStorage.getItem(STORAGE_KEY_HISTORY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.filter(item => item && typeof item === 'object') : [];
   } catch (error) {
     console.error("Gagal membaca riwayat interview:", error);
     return [];
@@ -116,7 +116,7 @@ export function clearAllInterviewHistory() {
  * @returns {Object}
  */
 export function calculateStats(history = null) {
-  const data = history || getInterviewHistory();
+  const data = Array.isArray(history) ? history.filter(item => item && typeof item === 'object') : getInterviewHistory();
   const total = data.length;
 
   if (total === 0) {
@@ -129,18 +129,18 @@ export function calculateStats(history = null) {
     };
   }
 
-  const totalScore = data.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0);
+  const totalScore = data.reduce((acc, curr) => acc + (Number(curr?.score) || 0), 0);
   const averageScore = Math.round(totalScore / total);
 
-  const totalSeconds = data.reduce((acc, curr) => acc + (Number(curr.durationSeconds) || 180), 0);
+  const totalSeconds = data.reduce((acc, curr) => acc + (Number(curr?.durationSeconds) || 180), 0);
   const totalPracticeMinutes = Math.max(1, Math.round(totalSeconds / 60));
 
-  // Menghitung perkembangan skor (sesi terbaru dibanding sesi pertama atau rata-rata)
+  // Menghitung perkembangan skor (sesi terbaru dibanding sesi sebelumnya)
   let scoreGrowth = 0;
   let growthDirection = 'neutral';
-  if (total > 1) {
-    const latestScore = Number(data[0].score) || 0;
-    const previousScore = Number(data[1].score) || 0;
+  if (total > 1 && data[0] && data[1]) {
+    const latestScore = Number(data[0]?.score) || 0;
+    const previousScore = Number(data[1]?.score) || 0;
     const diff = latestScore - previousScore;
     if (diff > 0) {
       scoreGrowth = diff;
@@ -167,7 +167,9 @@ export function getUserProfile() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_PROFILE);
     if (!raw) return DEFAULT_PROFILE;
-    return { ...DEFAULT_PROFILE, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return DEFAULT_PROFILE;
+    return { ...DEFAULT_PROFILE, ...parsed };
   } catch {
     return DEFAULT_PROFILE;
   }

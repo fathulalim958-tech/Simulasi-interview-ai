@@ -6,7 +6,8 @@ import {
   Lightbulb, 
   User, 
   X, 
-  Bot
+  Bot,
+  Music
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -41,7 +42,7 @@ export default function Sidebar({
       )}
 
       <aside className={`dashboard-sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
-        {/* Logo & Brand Header (Bersih tanpa tombol ganda pada desktop) */}
+        {/* Logo & Brand Header */}
         <div className="sidebar-brand-header">
           <div className="brand-logo-icon">
             <Bot size={22} className="logo-svg" />
@@ -50,7 +51,7 @@ export default function Sidebar({
 
           <div className="brand-text-block">
             <span className="brand-title">DevInterview</span>
-            <span className="brand-tag">AI HRD Platform</span>
+            <span className="brand-tag">AI HRD PLATFORM</span>
           </div>
 
           {/* Tombol Tutup Khusus Layar Mobile Drawer (X) */}
@@ -83,9 +84,8 @@ export default function Sidebar({
                     onClick={() => handleItemClick(item.id)}
                     title={item.label}
                   >
-                    <Icon size={20} className="nav-item-icon" />
+                    <Icon size={19} className="nav-item-icon" />
                     <span className="nav-item-label">{item.label}</span>
-                    {isActive && <span className="active-indicator" />}
                   </button>
                 </li>
               );
@@ -97,9 +97,10 @@ export default function Sidebar({
         <div className="sidebar-interviewer-card">
           <div className="interviewer-mini-badge">
             <span className="online-pulse-dot" />
-            <span>HRD Alex Rivera</span>
+            <span className="interviewer-badge-name">Elon Musk</span>
+            <Music size={13} className="interviewer-music-icon" />
           </div>
-          <p className="interviewer-subtext">Latihan wawancara interaktif kapan saja dengan AI HRD profesional.</p>
+          <p className="interviewer-subtext">Tingkat kepercayaan perekrut kapan saja bersama Elon Musk.</p>
         </div>
       </aside>
     </>

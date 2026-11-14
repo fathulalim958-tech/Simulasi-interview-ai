@@ -4,6 +4,7 @@ import DashboardHeader from './DashboardHeader';
 import StatCard from './StatCard';
 import InterviewHistory from './InterviewHistory';
 import InterviewTips from './InterviewTips';
+import UserProfileView from './UserProfileView';
 import { 
   PlayCircle, 
   BookOpen, 
@@ -11,14 +12,13 @@ import {
   Clock, 
   BarChart3, 
   TrendingUp, 
-  User, 
-  X,
-  ArrowLeft,
-  ArrowRight,
-  Sparkles,
+  ArrowLeft, 
+  ArrowRight, 
+  Briefcase,
   History
 } from 'lucide-react';
-import alexHeroAvatar from '../assets/alex-rivera-hrd.png';
+import AIHRD3D from './AIHRD3D';
+import AmbientBackground from './AmbientBackground';
 import { 
   getInterviewHistory, 
   calculateStats, 
@@ -31,7 +31,9 @@ import './Dashboard.css';
 
 export default function Dashboard({ 
   onStartInterview, 
-  onViewResult 
+  onViewResult,
+  theme = 'dark',
+  onToggleTheme
 }) {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -44,28 +46,43 @@ export default function Dashboard({
   // Statistik dihitung secara dinamis dari riwayat terkini
   const stats = useMemo(() => calculateStats(history), [history]);
 
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [editName, setEditName] = useState(() => userProfile?.name || 'Fathur');
-  const [editTitle, setEditTitle] = useState(() => userProfile?.title || 'Software Engineer');
+  // List 3 riwayat terbaru di kolom kiri bawah
+  const displayedRecentHistory = useMemo(() => {
+    if (history && history.length > 0) {
+      return history.slice(0, 3).map((item, idx) => ({
+        id: item.id,
+        title: item.position ? `Interview Simulasi (${item.position})` : `Interview Simulasi ${history.length - idx}`,
+        date: item.formattedDate || 'Baru saja',
+        score: item.score || 0,
+        finalResult: item.finalResult,
+        userData: item.userData
+      }));
+    }
+    return [];
+  }, [history]);
+
+  // 5 Topik Tips di kolom kanan bawah (sesuai mockup)
+  const guideTips = [
+    { id: 1, text: 'Kenali Profil Perusahaan' },
+    { id: 2, text: 'Tunjukkan Keahlian Anda' },
+    { id: 3, text: 'Berikan Contoh Nyata' },
+    { id: 4, text: 'Tunjukkan Motivasi' },
+    { id: 5, text: 'Ajukan Pertanyaan yang Relevan' }
+  ];
 
   const handleMenuSelect = (menuId) => {
     if (menuId === 'start') {
       onStartInterview();
-    } else if (menuId === 'profile') {
-      setIsProfileModalOpen(true);
     } else {
       setActiveMenu(menuId);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const handleSaveProfile = (e) => {
-    e.preventDefault();
-    if (!editName.trim()) return;
-    const updated = { ...userProfile, name: editName.trim(), title: editTitle.trim() };
-    setUserProfile(updated);
-    saveUserProfile(updated);
-    setIsProfileModalOpen(false);
+  const handleSaveProfile = (updatedProfile) => {
+    if (!updatedProfile) return;
+    setUserProfile(updatedProfile);
+    saveUserProfile(updatedProfile);
   };
 
   // Hapus satu sesi riwayat interview
@@ -82,6 +99,9 @@ export default function Dashboard({
 
   return (
     <div className="dashboard-container">
+      {/* Latar Belakang Gradien Gelombang Ambient 3D Sutra */}
+      <AmbientBackground theme={theme} />
+
       {/* 1. Sidebar Navigasi */}
       <Sidebar 
         activeMenu={activeMenu}
@@ -103,12 +123,14 @@ export default function Dashboard({
               setIsSidebarCollapsed(prev => !prev);
             }
           }}
-          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenProfile={() => handleMenuSelect('profile')}
+          theme={theme}
+          onToggleTheme={onToggleTheme}
         />
 
         <main className="dashboard-content-area">
           {/* =================================================================
-              TAMPILAN 1: DASHBOARD UTAMA (RINGKAS & TIDAK TERLALU PANJANG)
+              TAMPILAN 1: DASHBOARD UTAMA (LAYOUT ORIGINAL DENGAN UI/UX DUA MODE)
              ================================================================= */}
           {activeMenu === 'dashboard' && (
             <>
@@ -119,7 +141,7 @@ export default function Dashboard({
                 <div className="hero-content-col">
                   <div className="hero-online-badge">
                     <span className="live-pulse-green" />
-                    <span>AI Interviewer Online • Alex Rivera</span>
+                    <span>AI Interviewer Online - Elon Musk</span>
                   </div>
 
                   <h2 className="hero-title">
@@ -149,17 +171,13 @@ export default function Dashboard({
                   </div>
                 </div>
 
-                {/* Showcase Gambar Avatar HRD Alex Rivera */}
+                {/* Showcase 3D Avatar HRD Elon Musk */}
                 <div className="hero-avatar-showcase">
                   <div className="showcase-card">
-                    <img 
-                      src={alexHeroAvatar} 
-                      alt="Alex Rivera - HR Manager TechCorp" 
-                      className="showcase-img" 
-                    />
+                    <AIHRD3D effectiveStatus="idle" />
                     <div className="showcase-badge-overlay">
-                      <span className="showcase-name">Alex Rivera</span>
-                      <span className="showcase-role">HR Manager • TechCorp</span>
+                      <span className="showcase-name">Elon Musk</span>
+                      <span className="showcase-role">Lead Interviewer</span>
                     </div>
                   </div>
                 </div>
@@ -190,7 +208,7 @@ export default function Dashboard({
                   value={stats.totalPracticeMinutes}
                   unit="Menit"
                   icon={Clock}
-                  trendLabel="Akumulasi simulasi"
+                  trendLabel="Akun aktif simulasi"
                   gradientTheme="amber"
                 />
 
@@ -206,54 +224,97 @@ export default function Dashboard({
                 />
               </section>
 
-              {/* Navigasi Ringkas: Riwayat & Panduan Interview (Riwayat lengkap ada di halaman tersendiri) */}
-              <section className="dashboard-shortcuts-grid">
-                {/* Shortcut Riwayat Interview */}
-                <div className="dashboard-shortcut-card">
-                  <div className="shortcut-icon-box blue">
-                    <History size={24} />
+              {/* 2 Kolom Bawah: Riwayat Interview & Panduan Wawancara (Sesuai Mockup Gambar) */}
+              <section className="dashboard-bottom-two-col">
+                {/* Kolom Kiri: Riwayat Interview */}
+                <div className="bottom-card history-preview-card">
+                  <div className="bottom-card-header">
+                    <h3 className="bottom-card-title">Riwayat Interview</h3>
+                    <button 
+                      className="btn-view-all-text"
+                      onClick={() => handleMenuSelect('history')}
+                    >
+                      <span>Lihat Semua</span>
+                      <ArrowRight size={14} />
+                    </button>
                   </div>
-                  <div className="shortcut-text-block">
-                    <div className="shortcut-badge-row">
-                      <h3 className="shortcut-title">Riwayat Interview</h3>
-                      <span className="shortcut-count-badge">
-                        {history.length} Sesi Tersimpan
-                      </span>
-                    </div>
-                    <p className="shortcut-desc">
-                      Tinjau hasil evaluasi, skor kompetensi, analisis kekuatan & kelemahan, serta saran pengembangan karier dari HRD.
-                    </p>
+
+                  <div className="history-preview-list">
+                    {displayedRecentHistory.length === 0 ? (
+                      <div className="history-empty-mini">
+                        <div className="empty-mini-icon-circle">
+                          <History size={20} />
+                        </div>
+                        <p className="empty-mini-text">tidak ada riwayat interview</p>
+                        <button 
+                          className="btn-mini-start" 
+                          onClick={onStartInterview}
+                        >
+                          <PlayCircle size={14} />
+                          <span>Mulai Wawancara Baru</span>
+                        </button>
+                      </div>
+                    ) : (
+                      displayedRecentHistory.map((item, idx) => {
+                        const isHigh = item.score >= 65;
+                        return (
+                          <div 
+                            key={item.id || idx} 
+                            className="history-preview-item"
+                            onClick={() => {
+                              if (item.finalResult) onViewResult(item);
+                              else handleMenuSelect('history');
+                            }}
+                          >
+                            <div className="history-item-play-icon">
+                              <PlayCircle size={18} />
+                            </div>
+                            <div className="history-item-info">
+                              <h4 className="history-item-title">{item.title}</h4>
+                              <span className="history-item-date">{item.date}</span>
+                            </div>
+                            <div className={`history-score-pill ${isHigh ? 'score-high' : 'score-med'}`}>
+                              Skor: {item.score}/100
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
-                  <button 
-                    className="shortcut-action-btn secondary"
-                    onClick={() => handleMenuSelect('history')}
-                  >
-                    <span>Buka Riwayat</span>
-                    <ArrowRight size={16} />
-                  </button>
                 </div>
 
-                {/* Shortcut Panduan & Strategi */}
-                <div className="dashboard-shortcut-card">
-                  <div className="shortcut-icon-box purple">
-                    <Sparkles size={24} />
+                {/* Kolom Kanan: Panduan Wawancara */}
+                <div className="bottom-card guide-preview-card">
+                  <div className="bottom-card-header">
+                    <h3 className="bottom-card-title">Panduan Wawancara</h3>
+                    <span className="guide-count-pill">5 Topik Tips</span>
                   </div>
-                  <div className="shortcut-text-block">
-                    <div className="shortcut-badge-row">
-                      <h3 className="shortcut-title">Panduan Wawancara</h3>
-                      <span className="shortcut-count-badge purple">5 Topik Tips</span>
+
+                  <div className="guide-numbered-list">
+                    {guideTips.map((tip) => (
+                      <div 
+                        key={tip.id} 
+                        className="guide-numbered-item"
+                        onClick={() => handleMenuSelect('tips')}
+                      >
+                        <span className="guide-number-circle">{tip.id}</span>
+                        <span className="guide-item-text">{tip.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Banner CTA Bawah */}
+                  <div className="guide-cta-banner" onClick={onStartInterview} role="button" tabIndex={0}>
+                    <div className="cta-banner-icon">
+                      <Briefcase size={16} />
                     </div>
-                    <p className="shortcut-desc">
-                      Pelajari teknik STAR, cara perkenalan diri yang memikat, hingga strategi menjawab pertanyaan sulit dengan percaya diri.
-                    </p>
+                    <span className="cta-banner-text">
+                      Persiapkan diri dengan baik, raih karier impianmu!
+                    </span>
+                    <button className="cta-banner-arrow" aria-label="Mulai Latihan">
+                      <ArrowRight size={14} />
+                    </button>
                   </div>
-                  <button 
-                    className="shortcut-action-btn"
-                    onClick={() => handleMenuSelect('tips')}
-                  >
-                    <span>Buka Panduan</span>
-                    <ArrowRight size={16} />
-                  </button>
                 </div>
               </section>
             </>
@@ -272,9 +333,19 @@ export default function Dashboard({
                   <ArrowLeft size={16} />
                   <span>Kembali ke Dashboard</span>
                 </button>
+                <button 
+                  className="btn-header-start-interview"
+                  onClick={onStartInterview}
+                >
+                  <PlayCircle size={16} />
+                  <span>Wawancara Baru</span>
+                </button>
               </div>
 
-              <InterviewTips />
+              <InterviewTips 
+                onStartInterview={onStartInterview} 
+                onSelectTipsItem={(tipId) => console.log('Tip dipilih:', tipId)}
+              />
             </div>
           )}
 
@@ -291,6 +362,13 @@ export default function Dashboard({
                   <ArrowLeft size={16} />
                   <span>Kembali ke Dashboard</span>
                 </button>
+                <button 
+                  className="btn-header-start-interview"
+                  onClick={onStartInterview}
+                >
+                  <PlayCircle size={16} />
+                  <span>Wawancara Baru</span>
+                </button>
               </div>
 
               <InterviewHistory 
@@ -303,70 +381,38 @@ export default function Dashboard({
               />
             </div>
           )}
+
+          {/* =================================================================
+              TAMPILAN 4: PROFIL PENGGUNA (NAVIGASI TERPISAH)
+             ================================================================= */}
+          {activeMenu === 'profile' && (
+            <div className="dashboard-subview-wrapper">
+              <div className="subview-nav-bar">
+                <button 
+                  className="btn-back-dashboard"
+                  onClick={() => handleMenuSelect('dashboard')}
+                >
+                  <ArrowLeft size={16} />
+                  <span>Kembali ke Dashboard</span>
+                </button>
+                <button 
+                  className="btn-header-start-interview"
+                  onClick={onStartInterview}
+                >
+                  <PlayCircle size={16} />
+                  <span>Wawancara Baru</span>
+                </button>
+              </div>
+
+              <UserProfileView 
+                userProfile={userProfile}
+                onSaveProfile={handleSaveProfile}
+                stats={stats}
+              />
+            </div>
+          )}
         </main>
       </div>
-
-      {/* Profil Modal */}
-      {isProfileModalOpen && (
-        <div className="tips-modal-backdrop" onClick={() => setIsProfileModalOpen(false)}>
-          <div className="tips-modal-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="tips-modal-header">
-              <div className="modal-title-flex">
-                <div className="modal-icon-box">
-                  <User size={22} />
-                </div>
-                <div>
-                  <h3 className="modal-heading">Profil Kandidat</h3>
-                  <span className="modal-subheading">Informasi nama & target karier</span>
-                </div>
-              </div>
-              <button 
-                className="modal-close-btn"
-                onClick={() => setIsProfileModalOpen(false)}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '6px' }}>
-                  NAMA LENGKAP
-                </label>
-                <input 
-                  type="text" 
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="form-input"
-                  placeholder="Nama Anda"
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '6px' }}>
-                  TARGET POSISI / PROFESI
-                </label>
-                <input 
-                  type="text" 
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="form-input"
-                  placeholder="Misal: Frontend Developer"
-                />
-              </div>
-
-              <button 
-                type="submit" 
-                className="modal-dismiss-btn"
-                style={{ marginTop: '8px' }}
-              >
-                Simpan Profil
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

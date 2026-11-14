@@ -8,7 +8,6 @@ import {
   Award,
   LayoutDashboard
 } from 'lucide-react';
-import alexAvatarThumb from '../assets/alex-rivera-hrd.png';
 import './ResultPage.css';
 
 export default function ResultPage({ 
@@ -57,14 +56,12 @@ export default function ResultPage({
           </div>
 
           <div className="evaluator-tag">
-            <img 
-              src={alexAvatarThumb} 
-              alt="Alex Rivera" 
-              className="evaluator-avatar" 
-            />
+            <div className="evaluator-avatar evaluator-avatar-initials">
+              EM
+            </div>
             <div className="evaluator-info">
-              <span className="evaluator-name">Alex Rivera</span>
-              <span className="evaluator-role">HR Manager • TechCorp</span>
+              <span className="evaluator-name">Elon Musk</span>
+              <span className="evaluator-role">Lead Evaluator • Executive</span>
             </div>
           </div>
         </header>

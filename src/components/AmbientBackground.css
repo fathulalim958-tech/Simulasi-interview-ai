@@ -1,0 +1,100 @@
+/* ==========================================================================
+   Ambient Flowing Wave Background Styles
+   ========================================================================== */
+
+.ambient-bg-wrapper {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  transition: background 0.5s ease;
+}
+
+/* Latar Dasar Dark Mode */
+.ambient-dark {
+  background: radial-gradient(circle at 85% 15%, #180d38 0%, transparent 50%),
+              radial-gradient(circle at 10% 85%, #0c1c44 0%, transparent 50%),
+              linear-gradient(135deg, #060914 0%, #03060f 100%);
+}
+
+/* Latar Dasar Light Mode */
+.ambient-light {
+  background: radial-gradient(circle at 15% 20%, #e0e7ff 0%, transparent 50%),
+              radial-gradient(circle at 85% 80%, #ede9fe 0%, transparent 45%),
+              linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.ambient-waves-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+}
+
+/* Ambient Glowing Orbs */
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.ambient-dark .orb-1 {
+  width: 550px;
+  height: 550px;
+  top: -150px;
+  right: -100px;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, transparent 70%);
+  animation: floatOrb 12s ease-in-out infinite alternate;
+}
+
+.ambient-dark .orb-2 {
+  width: 600px;
+  height: 600px;
+  bottom: -150px;
+  left: 5%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+  animation: floatOrb 15s ease-in-out infinite alternate-reverse;
+}
+
+.ambient-dark .orb-3 {
+  width: 450px;
+  height: 450px;
+  top: 35%;
+  left: 20%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, transparent 70%);
+}
+
+.ambient-light .orb-1 {
+  width: 550px;
+  height: 550px;
+  top: -150px;
+  right: -100px;
+  background: radial-gradient(circle, rgba(199, 210, 254, 0.7) 0%, transparent 70%);
+}
+
+.ambient-light .orb-2 {
+  width: 600px;
+  height: 600px;
+  bottom: -150px;
+  left: 5%;
+  background: radial-gradient(circle, rgba(224, 231, 255, 0.7) 0%, transparent 70%);
+}
+
+.ambient-light .orb-3 {
+  width: 450px;
+  height: 450px;
+  top: 35%;
+  left: 20%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, transparent 70%);
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-30px, 40px) scale(1.08); }
+}

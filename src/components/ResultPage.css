@@ -78,6 +78,18 @@
   border: 1.5px solid #3b82f6;
 }
 
+.evaluator-avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7157f5, #3b82f6);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px rgba(113, 87, 245, 0.35);
+}
+
 .evaluator-info {
   display: flex;
   flex-direction: column;

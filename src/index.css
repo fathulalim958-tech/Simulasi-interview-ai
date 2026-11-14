@@ -1,5 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+:root {
+  --app-bg: #070a13;
+  --app-text: #f8fafc;
+}
+
+[data-theme="light"] {
+  --app-bg: #eef2f7;
+  --app-text: #0f172a;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -9,12 +19,13 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  background: #070a13;
-  color: #f8fafc;
+  background: var(--app-bg);
+  color: var(--app-text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {

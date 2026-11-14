@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { User, Briefcase, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
-import alexAvatarThumb from '../assets/alex-rivera-hrd.png';
 import './FormInput.css';
 
 export default function FormInput({ onStart, onBack }) {
@@ -55,14 +54,12 @@ export default function FormInput({ onStart, onBack }) {
 
         {/* Header Preview Interviewer */}
         <div className="form-header-badge">
-          <img 
-            src={alexAvatarThumb} 
-            alt="Alex Rivera" 
-            className="form-avatar-preview" 
-          />
+          <div className="form-avatar-preview form-avatar-initials">
+            EM
+          </div>
           <div className="form-interviewer-info">
-            <span className="interviewer-name">Alex Rivera</span>
-            <span className="interviewer-role">HR Manager • TechCorp Interview AI</span>
+            <span className="interviewer-name">Elon Musk</span>
+            <span className="interviewer-role">Executive Tech Interviewer</span>
           </div>
         </div>
 

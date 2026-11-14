@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Menu, Calendar } from 'lucide-react';
+import { Menu, Calendar, Sun, Moon } from 'lucide-react';
 
 export default function DashboardHeader({ 
-  userName = 'Fathur', 
+  userName = 'budi', 
   isSidebarOpen = true,
   onToggleSidebar,
-  onOpenProfile
+  onOpenProfile,
+  theme = 'dark',
+  onToggleTheme
 }) {
   // Format tanggal hari ini dalam Bahasa Indonesia
   const [todayFormatted] = useState(() => {
@@ -41,6 +43,25 @@ export default function DashboardHeader({
       </div>
 
       <div className="header-right">
+        {/* Tombol Pengalih 2 Mode (Light & Dark Mode) */}
+        <button 
+          className={`theme-toggle-btn ${theme === 'light' ? 'is-light' : 'is-dark'}`}
+          onClick={onToggleTheme}
+          title={theme === 'dark' ? "Beralih ke Mode Terang (Light Mode)" : "Beralih ke Mode Gelap (Dark Mode)"}
+          aria-label="Ubah Mode Tampilan"
+        >
+          <div className="theme-toggle-slider">
+            {theme === 'dark' ? (
+              <Moon size={15} className="theme-icon moon-icon" />
+            ) : (
+              <Sun size={15} className="theme-icon sun-icon" />
+            )}
+          </div>
+          <span className="theme-toggle-text">
+            {theme === 'dark' ? 'Mode Gelap' : 'Mode Terang'}
+          </span>
+        </button>
+
         {/* Date Badge */}
         <div className="header-date-badge">
           <Calendar size={15} className="date-icon" />
@@ -50,11 +71,11 @@ export default function DashboardHeader({
         {/* User Profile Pill */}
         <div className="header-user-profile" onClick={onOpenProfile} role="button" tabIndex={0}>
           <div className="profile-avatar-circle">
-            {userName ? userName.charAt(0).toUpperCase() : 'U'}
+            {userName ? userName.charAt(0).toUpperCase() : 'B'}
           </div>
           <div className="profile-details-mini">
             <span className="profile-name-text">{userName}</span>
-            <span className="profile-status-badge">Kandidat Aktif</span>
+            <span className="profile-status-badge">Candidate Aktif</span>
           </div>
         </div>
       </div>

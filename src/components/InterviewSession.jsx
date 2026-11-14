@@ -14,7 +14,8 @@ import {
   Briefcase, 
   Loader2,
   WifiOff,
-  RefreshCw
+  RefreshCw,
+  ArrowRight
 } from 'lucide-react';
 import { GROQ_API_TRANSCRIPTION_ENDPOINT, GROQ_TRANSCRIPTION_MODEL } from '../constants';
 import './InterviewSession.css';
@@ -33,7 +34,9 @@ export default function InterviewSession({
   userData,
   networkError = null,
   onRetryNetworkError = null,
-  onDismissNetworkError = null
+  onDismissNetworkError = null,
+  isClosingSession = false,
+  onFinishClosing = null
 }) {
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -59,7 +62,10 @@ export default function InterviewSession({
       .replace(/[*#_~`>]/g, '')
       .replace(/\{[\s\S]*\}/g, '')
       .replace(/^\s*(?:pertanyaan|soal|nomor|no)?\s*\d+[.:)-]?\s*/i, '')
-      .replace(/^\s*pertanyaan\s*(?:ke-?\d+|pertama|kedua|ketiga|keempat|kelima)[.:)]?\s*/i, '')
+      .replace(/^\s*pertanyaan\s*(?:ke-?\d+|pertama|kedua|ketiga|keempat|kelima|keenam|ketujuh)[.:)]?\s*/i, '')
+      // Hapus catatan meta seperti "(Waiting for your response to the final question.)"
+      .replace(/\s*\([^)]*(?:waiting|menunggu|response|respon|final|terakhir|question|pertanyaan|catatan|note)[^)]*\)/gi, '')
+      .replace(/\s*\[[^\]]*(?:waiting|menunggu|response|respon|final|terakhir|question|pertanyaan|catatan|note)[^\]]*\]/gi, '')
       .trim();
   };
 
@@ -130,9 +136,12 @@ export default function InterviewSession({
     return voices.find(v => v.name.includes('Natural') || v.name.includes('Neural')) || null;
   };
 
-  // Text-To-Speech (Alex Rivera berbicara membacakan pertanyaan dengan Suara Neural)
-  const speakQuestion = React.useCallback((text) => {
-    if (!text || !('speechSynthesis' in window)) return;
+  // Text-To-Speech (Alex Rivera / Elon Musk berbicara membacakan pertanyaan & penutup)
+  const speakQuestion = React.useCallback((text, onEndCallback = null) => {
+    if (!text || !('speechSynthesis' in window)) {
+      onEndCallback?.();
+      return;
+    }
     
     window.speechSynthesis.cancel();
     if (window.speechSynthesis.paused) {
@@ -143,7 +152,10 @@ export default function InterviewSession({
       .replace(/([.?!])\s*/g, '$1 ')
       .replace(/,\s*/g, ', ');
 
-    if (!cleanSpeech) return;
+    if (!cleanSpeech) {
+      onEndCallback?.();
+      return;
+    }
 
     const utterance = new SpeechSynthesisUtterance(cleanSpeech);
     utterance.lang = 'id-ID';
@@ -158,38 +170,86 @@ export default function InterviewSession({
       utterance.voice = bestVoice;
     }
 
+    // Keep-alive interval untuk mengatasi bug Chromium di mana speech otomatis pause setelah ~15 detik
+    let keepAliveTimer = null;
+
     utterance.onstart = () => {
       if (setIsSpeaking) setIsSpeaking(true);
+      keepAliveTimer = setInterval(() => {
+        if ('speechSynthesis' in window && window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        } else if (keepAliveTimer) {
+          clearInterval(keepAliveTimer);
+        }
+      }, 9000);
     };
 
     utterance.onend = () => {
+      if (keepAliveTimer) clearInterval(keepAliveTimer);
       if (setIsSpeaking) setIsSpeaking(false);
+      onEndCallback?.();
     };
 
     utterance.onerror = (e) => {
       console.warn("SpeechSynthesis error:", e);
+      if (keepAliveTimer) clearInterval(keepAliveTimer);
       lastSpokenQuestionRef.current = '';
       if (setIsSpeaking) setIsSpeaking(false);
+      onEndCallback?.();
     };
 
     window.speechSynthesis.speak(utterance);
   }, [setIsSpeaking]);
 
-  // Efek memicu suara pertanyaan:
-  // Panggil speakQuestion saat pertanyaan berubah. Diberi delay 400ms agar hardware kamera/mic & transisi selesai.
+  const hasClosingHandledRef = useRef(false);
+
+  // Efek memicu suara pertanyaan normal & penutup wawancara
   useEffect(() => {
     if (!currentQuestion || isLoadingAI) return;
     if (currentQuestion === lastSpokenQuestionRef.current) return;
 
-    const speakTimer = setTimeout(() => {
-      lastSpokenQuestionRef.current = currentQuestion;
-      speakQuestion(currentQuestion);
-    }, 400);
+    if (isClosingSession) {
+      // 1. Kasus Sesi Penutup: Pastikan teks dibacakan sampai TUNTAS sebelum berpindah ke halaman hasil
+      const triggerFinish = () => {
+        if (hasClosingHandledRef.current) return;
+        hasClosingHandledRef.current = true;
+        if (onFinishClosing) {
+          onFinishClosing();
+        }
+      };
 
-    return () => {
-      clearTimeout(speakTimer);
-    };
-  }, [currentQuestion, isLoadingAI, speakQuestion]);
+      // Hitung durasi fallback proporsional panjang kalimat penutup (rata-rata 2 kata/detik + buffer 8 detik)
+      const cleanClosing = cleanText(currentQuestion);
+      const wordCount = cleanClosing.split(/\s+/).length || 35;
+      const dynamicFallbackMs = Math.max(26000, Math.ceil((wordCount / 2.0) * 1000) + 8000);
+      const fallbackTimer = setTimeout(triggerFinish, dynamicFallbackMs);
+
+      const speakTimer = setTimeout(() => {
+        lastSpokenQuestionRef.current = currentQuestion;
+        speakQuestion(currentQuestion, () => {
+          // Suara penutup selesai 100%, beri jeda natural 1.8 detik sebelum menampilkan hasil
+          clearTimeout(fallbackTimer);
+          setTimeout(triggerFinish, 1800);
+        });
+      }, 400);
+
+      return () => {
+        clearTimeout(speakTimer);
+        clearTimeout(fallbackTimer);
+      };
+    } else {
+      // 2. Pertanyaan Normal: Panggil speakQuestion dengan delay 400ms
+      const speakTimer = setTimeout(() => {
+        lastSpokenQuestionRef.current = currentQuestion;
+        speakQuestion(currentQuestion);
+      }, 400);
+
+      return () => {
+        clearTimeout(speakTimer);
+      };
+    }
+  }, [currentQuestion, isLoadingAI, isClosingSession, onFinishClosing, speakQuestion]);
 
   // Cleanup suara HANYA saat komponen InterviewSession benar-benar unmount (keluar dari wawancara)
   useEffect(() => {
@@ -340,7 +400,7 @@ export default function InterviewSession({
 
   // Menghitung indeks pertanyaan (asisten)
   const assistantCount = chatHistory.filter(m => m.sender === 'assistant').length || 1;
-  const questionNumber = Math.min(assistantCount, 4);
+  const questionNumber = Math.min(assistantCount, 7);
 
   // Status AI untuk Avatar HRD
   const aiStatus = (isLoadingAI || isTranscribing)
@@ -372,11 +432,11 @@ export default function InterviewSession({
         <div className="header-meta">
           <div className="progress-badge">
             <span className="progress-label">Progres</span>
-            <span className="progress-count">{questionNumber} / 4</span>
+            <span className="progress-count">{questionNumber} / 7</span>
             <div className="progress-mini-track">
               <div 
                 className="progress-mini-bar" 
-                style={{ width: `${Math.min(100, (questionNumber / 4) * 100)}%` }} 
+                style={{ width: `${Math.min(100, (questionNumber / 7) * 100)}%` }} 
               />
             </div>
           </div>
@@ -413,14 +473,14 @@ export default function InterviewSession({
             <div className="subtitle-container">
               <div className="subtitle-box">
                 <div className="subtitle-speaker-tag">
-                  <span className="speaker-avatar-dot" />
-                  <span>Alex Rivera</span>
+                  <span className={`speaker-avatar-dot ${isClosingSession ? 'dot-closing' : ''}`} />
+                  <span>{isClosingSession ? 'Elon Musk • Penutupan Wawancara' : 'Elon Musk'}</span>
                 </div>
                 <div className="subtitle-text">
                   {isLoadingAI || isTranscribing ? (
                     <span className="subtitle-loading">
                       <Loader2 size={16} className="spinner-icon" />
-                      {isTranscribing ? "Menerjemahkan rekaman suara Anda..." : "Alex sedang menyusun evaluasi / pertanyaan berikutnya..."}
+                      {isTranscribing ? "Menerjemahkan rekaman suara Anda..." : "Elon sedang menyusun evaluasi / pertanyaan berikutnya..."}
                     </span>
                   ) : cleanText(currentQuestion) || "Menunggu pertanyaan..."}
                 </div>
@@ -487,7 +547,7 @@ export default function InterviewSession({
                   <div key={index} className={`chat-bubble-row ${isAI ? 'row-ai' : 'row-user'}`}>
                     <div className={`chat-bubble ${isAI ? 'bubble-ai' : 'bubble-user'}`}>
                       <div className="bubble-sender-name">
-                        {isAI ? 'Alex Rivera (HRD)' : (userName || 'Anda')}
+                        {isAI ? 'Elon Musk' : (userName || 'Anda')}
                       </div>
                       <div className="bubble-content-text">
                         {cleanText(item.message)}
@@ -505,71 +565,117 @@ export default function InterviewSession({
       {/* 3. BOTTOM CONTROL DOCK */}
       <footer className="meeting-footer">
         <div className="control-dock-inner">
-          {/* Main Action Button: Jawab Pertanyaan (Mikrofon) */}
-          <button 
-            className={`control-btn mic-action-btn ${isRecording ? 'recording-active' : ''}`}
-            onClick={isRecording ? stopRecording : startRecording}
-            disabled={isLoadingAI || isTranscribing}
-            title={isRecording ? "Klik untuk Selesai Menjawab" : "Klik untuk Mulai Menjawab"}
-          >
-            {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
-            <span className="btn-text">
-              {isRecording ? "Selesai Bicara" : "Jawab Pertanyaan"}
-            </span>
-            {isRecording && <span className="mic-pulse-ring" />}
-          </button>
+          {isClosingSession ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '10px 24px',
+              background: 'rgba(99, 102, 241, 0.15)',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              borderRadius: '9999px',
+              color: '#c7d2fe',
+              fontSize: '0.88rem',
+              fontWeight: 500,
+              flexWrap: 'wrap',
+              justifyContent: 'center'
+            }}>
+              <Loader2 size={16} className="spinner-icon" style={{ animation: 'spin 1.5s linear infinite' }} />
+              <span>Sesi selesai • Elon sedang membacakan penutup & menyusun lembar evaluasi Anda...</span>
+              <button 
+                onClick={() => {
+                  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                  if (onFinishClosing) onFinishClosing();
+                }}
+                style={{
+                  padding: '6px 14px',
+                  background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                  border: 'none',
+                  borderRadius: '20px',
+                  color: '#ffffff',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 8px rgba(99, 102, 241, 0.4)'
+                }}
+                title="Langsung Buka Lembar Evaluasi"
+              >
+                <span>Lihat Hasil Sekarang</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Main Action Button: Jawab Pertanyaan (Mikrofon) */}
+              <button 
+                className={`control-btn mic-action-btn ${isRecording ? 'recording-active' : ''}`}
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={isLoadingAI || isTranscribing}
+                title={isRecording ? "Klik untuk Selesai Menjawab" : "Klik untuk Mulai Menjawab"}
+              >
+                {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+                <span className="btn-text">
+                  {isRecording ? "Selesai Bicara" : "Jawab Pertanyaan"}
+                </span>
+                {isRecording && <span className="mic-pulse-ring" />}
+              </button>
 
-          <div className="dock-divider" />
+              <div className="dock-divider" />
 
-          {/* Toggle Video Camera */}
-          <button 
-            className={`control-btn secondary-btn ${!isVideoEnabled ? 'btn-alert' : ''}`}
-            onClick={toggleVideo}
-            title={isVideoEnabled ? "Matikan Kamera" : "Nyalakan Kamera"}
-          >
-            {isVideoEnabled ? <Video size={19} /> : <VideoOff size={19} />}
-          </button>
+              {/* Toggle Video Camera */}
+              <button 
+                className={`control-btn secondary-btn ${!isVideoEnabled ? 'btn-alert' : ''}`}
+                onClick={toggleVideo}
+                title={isVideoEnabled ? "Matikan Kamera" : "Nyalakan Kamera"}
+              >
+                {isVideoEnabled ? <Video size={19} /> : <VideoOff size={19} />}
+              </button>
 
-          {/* Replay TTS Question Voice */}
-          <button 
-            className="control-btn secondary-btn"
-            onClick={() => speakQuestion(currentQuestion)}
-            disabled={isSpeaking || isLoadingAI || isTranscribing}
-            title="Ulangi Suara Pertanyaan"
-          >
-            <Volume2 size={19} />
-          </button>
+              {/* Replay TTS Question Voice */}
+              <button 
+                className="control-btn secondary-btn"
+                onClick={() => speakQuestion(currentQuestion)}
+                disabled={isSpeaking || isLoadingAI || isTranscribing}
+                title="Ulangi Suara Pertanyaan"
+              >
+                <Volume2 size={19} />
+              </button>
 
-          {/* Toggle Closed Captions / Subtitle */}
-          <button 
-            className={`control-btn secondary-btn ${showCaptions ? 'btn-active' : ''}`}
-            onClick={() => setShowCaptions(prev => !prev)}
-            title="Buka / Tutup Subtitle Teks"
-          >
-            <Subtitles size={19} />
-          </button>
+              {/* Toggle Closed Captions / Subtitle */}
+              <button 
+                className={`control-btn secondary-btn ${showCaptions ? 'btn-active' : ''}`}
+                onClick={() => setShowCaptions(prev => !prev)}
+                title="Buka / Tutup Subtitle Teks"
+              >
+                <Subtitles size={19} />
+              </button>
 
-          {/* Toggle Sidebar Chat on Mobile/Tablet */}
-          <button 
-            className={`control-btn secondary-btn ${isChatOpen ? 'btn-active' : ''}`}
-            onClick={() => setIsChatOpen(prev => !prev)}
-            title="Buka / Tutup Transkrip"
-          >
-            <MessageSquare size={19} />
-          </button>
+              {/* Toggle Sidebar Chat on Mobile/Tablet */}
+              <button 
+                className={`control-btn secondary-btn ${isChatOpen ? 'btn-active' : ''}`}
+                onClick={() => setIsChatOpen(prev => !prev)}
+                title="Buka / Tutup Transkrip"
+              >
+                <MessageSquare size={19} />
+              </button>
 
-          <div className="dock-divider" />
+              <div className="dock-divider" />
 
-          {/* End Call / Akhiri Wawancara */}
-          <button 
-            className="control-btn end-call-btn"
-            onClick={() => setIsEndModalOpen(true)}
-            disabled={isLoadingAI}
-            title="Akhiri Wawancara & Dapatkan Hasil Evaluasi"
-          >
-            <PhoneOff size={20} />
-            <span className="btn-text end-text">Akhiri Wawancara</span>
-          </button>
+              {/* End Call / Akhiri Wawancara */}
+              <button 
+                className="control-btn end-call-btn"
+                onClick={() => setIsEndModalOpen(true)}
+                disabled={isLoadingAI}
+                title="Akhiri Wawancara & Dapatkan Hasil Evaluasi"
+              >
+                <PhoneOff size={20} />
+                <span className="btn-text end-text">Akhiri Wawancara</span>
+              </button>
+            </>
+          )}
         </div>
       </footer>
 
@@ -652,7 +758,7 @@ export default function InterviewSession({
                 </>
               ) : (
                 <>
-                  Sesi wawancara akan dihentikan dan AI HRD Alex Rivera akan langsung mengompilasi evaluasi <strong>apa adanya</strong> berdasarkan jawaban yang sudah Anda berikan.
+                  Sesi wawancara akan dihentikan dan Elon Musk akan langsung mengompilasi evaluasi <strong>apa adanya</strong> berdasarkan jawaban yang sudah Anda berikan.
                 </>
               )}
             </p>
