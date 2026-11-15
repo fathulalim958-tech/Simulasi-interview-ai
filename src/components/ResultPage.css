@@ -195,6 +195,86 @@
   line-height: 1.45;
 }
 
+/* ==========================================================================
+   Overall Summary Card (Kesimpulan Keseluruhan Hasil Wawancara)
+   ========================================================================== */
+.overall-summary-card {
+  margin-bottom: 24px;
+  background: rgba(14, 22, 41, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-left: 4px solid var(--accent-blue, #3b82f6);
+  border-radius: 16px;
+  padding: 22px 26px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s ease;
+}
+
+[data-theme="light"] .overall-summary-card {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  border-left-color: #2563eb;
+  box-shadow: 0 6px 20px rgba(148, 163, 184, 0.15);
+}
+
+.overall-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.summary-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="light"] .summary-icon-box {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.overall-summary-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 2px;
+}
+
+[data-theme="light"] .overall-summary-title {
+  color: #0f172a;
+}
+
+.overall-summary-subtitle {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+[data-theme="light"] .overall-summary-subtitle {
+  color: #64748b;
+}
+
+.overall-summary-text {
+  font-size: 0.94rem;
+  line-height: 1.65;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+[data-theme="light"] .overall-summary-text {
+  color: #334155;
+}
+
 /* Analysis Grid */
 .analysis-cards-grid {
   display: grid;

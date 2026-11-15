@@ -13,7 +13,8 @@ import {
   Check,
   User,
   Bot,
-  FileDown
+  FileDown,
+  FileText
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import './ResultPage.css';
@@ -31,6 +32,7 @@ export default function ResultPage({
 
   const { 
     score = 0, 
+    overallSummary = '',
     strengths = [], 
     weaknesses = [], 
     recommendations = [] 
@@ -42,19 +44,32 @@ export default function ResultPage({
   let verdictBadge = "Perlu Pengembangan";
   let badgeClass = "badge-needs-improvement";
   let verdictHeadline = "Masih Ada Ruang Peningkatan";
-  let verdictSubtext = "Kandidat memiliki potensi dasar namun perlu memperdalam pemahaman teknis dan artikulasi dalam menjawab.";
+  let verdictSubtext = "Kandidat memiliki potensi dasar namun perlu memperdalam pemahaman dan artikulasi dalam menjawab.";
 
   if (numScore >= 80) {
     verdictBadge = "Sangat Direkomendasikan";
     badgeClass = "badge-excellent";
     verdictHeadline = "Performa Wawancara Unggul";
-    verdictSubtext = "Kandidat menunjukkan penguasaan materi yang matang, komunikasi terstruktur, dan pemahaman industri yang kuat.";
+    verdictSubtext = "Kandidat menunjukkan penguasaan materi yang matang, komunikasi terstruktur, dan kesiapan kerja yang sangat kuat.";
   } else if (numScore >= 65) {
     verdictBadge = "Direkomendasikan Bersyarat";
     badgeClass = "badge-good";
     verdictHeadline = "Kandidat Kompeten & Siap Kerja";
     verdictSubtext = "Kandidat mampu menjawab sebagian besar tantangan dengan baik dan memiliki fondasi yang cukup solid.";
   }
+
+  // Kesimpulan keseluruhan yang komprehensif (dari AI atau fallback analitis cerdas)
+  const effectiveSummary = overallSummary?.trim() || (() => {
+    const candidateName = userData?.name || 'Kandidat';
+    const position = userData?.position || 'posisi yang dilamar';
+    if (numScore >= 80) {
+      return `Secara keseluruhan, ${candidateName} menampilkan performa wawancara yang sangat matang dan unggul untuk posisi ${position}. Kandidat mampu mengartikulasikan keahlian inti, memberikan pendekatan pemecahan masalah yang sistematis, serta memiliki motivasi dan pemahaman budaya kerja yang kuat. Kandidat sangat direkomendasikan untuk tahap selanjutnya.`;
+    } else if (numScore >= 65) {
+      return `Secara keseluruhan, ${candidateName} memiliki dasar kompetensi yang cukup solid dan kesiapan kerja yang baik pada posisi ${position}. Penyampaian jawaban sudah cukup jelas, dengan ruang peningkatan pada pendalaman contoh kasus konkret dan penyusunan strategi terukur. Kandidat memiliki potensi berkembang pesat dengan arahan yang tepat.`;
+    } else {
+      return `Berdasarkan evaluasi wawancara, ${candidateName} masih memerlukan latihan terarah dan pendalaman materi untuk posisi ${position}. Pemaparan jawaban masih cenderung umum dan perlu diperkuat dengan metode komunikasi terstruktur (seperti teknik STAR) serta pembuktian keahlian praktis agar lebih meyakinkan pewawancara.`;
+    }
+  })();
 
   // Helper untuk membersihkan format markdown dan meta tag
   const cleanMessage = (text) => {
@@ -301,7 +316,33 @@ export default function ResultPage({
 
       y += 28;
 
-      // 5. Kartu Analisis Kompetensi (3 Accent Cards)
+      // 5. Kesimpulan Keseluruhan Hasil Wawancara (Executive Summary)
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      const splitSummary = doc.splitTextToSize(effectiveSummary, contentWidth - 12);
+      const summaryBoxHeight = 8 + (splitSummary.length * 3.8) + 5;
+      checkPageBreak(summaryBoxHeight + 3);
+
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(margin, y, contentWidth, summaryBoxHeight, 1.5, 1.5, 'FD');
+
+      doc.setFillColor(59, 130, 246);
+      doc.roundedRect(margin, y, 2.5, summaryBoxHeight, 1, 1, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(30, 41, 59);
+      doc.text('KESIMPULAN KESELURUHAN HASIL INTERVIEW (EXECUTIVE SUMMARY)', margin + 6, y + 5);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(51, 65, 85);
+      doc.text(splitSummary, margin + 6, y + 9.5);
+
+      y += summaryBoxHeight + 3.5;
+
+      // 6. Kartu Analisis Kompetensi (3 Accent Cards)
       const renderCompetencyCard = (title, items, theme, defaultItem) => {
         const lineSpacing = 3.8;
         const paddingY = 3.5;
@@ -530,6 +571,20 @@ export default function ResultPage({
             <h2 className="score-headline">{verdictHeadline}</h2>
             <p className="score-subtext">{verdictSubtext}</p>
           </div>
+        </div>
+
+        {/* Kesimpulan Keseluruhan Hasil Wawancara */}
+        <div className="overall-summary-card">
+          <div className="overall-summary-header">
+            <div className="summary-icon-box">
+              <FileText size={18} />
+            </div>
+            <div>
+              <h3 className="overall-summary-title">Kesimpulan Keseluruhan Hasil Wawancara</h3>
+              <span className="overall-summary-subtitle">Ringkasan Evaluasi Menyeluruh oleh Elon Musk</span>
+            </div>
+          </div>
+          <p className="overall-summary-text">{effectiveSummary}</p>
         </div>
 
         {/* Analysis Cards Grid */}

@@ -132,6 +132,7 @@ export async function evaluateEarlyInterview(position, experience, chatHistory) 
     return {
       finalResult: {
         score: 0,
+        overallSummary: "Sesi wawancara langsung diakhiri sebelum kandidat memberikan jawaban atas pertanyaan pertama, sehingga belum ada data kompetensi yang dapat dievaluasi secara menyeluruh.",
         strengths: [
           "Kandidat telah berhasil memulai sesi simulasi wawancara."
         ],
@@ -154,6 +155,7 @@ export async function evaluateEarlyInterview(position, experience, chatHistory) 
     return {
       finalResult: {
         score: fallbackScore,
+        overallSummary: `Kandidat telah merespons ${userMessages.length} pertanyaan sebelum sesi diakhiri lebih awal. Evaluasi dinilai secara proporsional berdasarkan jawaban awal yang telah disampaikan.`,
         strengths: [
           `Kandidat telah merespons ${userMessages.length} pertanyaan awal dari HRD.`,
           "Menunjukkan inisiatif komunikasi dasar untuk posisi yang dilamar."
@@ -187,6 +189,7 @@ WAJIB FORMAT JSON MURNI TANPA PEMBUKA ATAU PENUTUP:
 {
   "finalResult": {
     "score": <angka bilangan bulat antara 1 sampai 75>,
+    "overallSummary": "<Paragraf ringkasan kesimpulan keseluruhan evaluasi performa kandidat>",
     "strengths": [
       "<Kelebihan yang terlihat dari jawaban yang ada 1>",
       "<Kelebihan yang terlihat dari jawaban yang ada 2>"

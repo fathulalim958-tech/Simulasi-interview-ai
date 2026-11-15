@@ -111,8 +111,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at center, rgba(11, 18, 36, 0.4) 0%, rgba(7, 10, 20, 0.92) 100%),
-              url('/office-background.png') center center / cover no-repeat;
+  background: url('/office-background.jpg') center center / cover no-repeat;
 }
 
 /* Mode Toggle Button (3D Model / 2D Avatar) */
