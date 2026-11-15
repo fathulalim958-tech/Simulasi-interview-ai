@@ -137,7 +137,7 @@ export async function evaluateEarlyInterview(position, experience, chatHistory) 
         ],
         weaknesses: [
           "Wawancara diakhiri sebelum kandidat memberikan jawaban sama sekali.",
-          "Belum ada data kompetensi teknis atau kemampuan komunikasi yang dapat dinilai."
+          "Belum ada data kompetensi atau kemampuan komunikasi yang dapat dinilai."
         ],
         recommendations: [
           "Ikuti sesi wawancara hingga selesai dan jawab setiap pertanyaan dari HRD.",
@@ -170,9 +170,9 @@ export async function evaluateEarlyInterview(position, experience, chatHistory) 
     };
   }
 
-  const prompt = `Anda adalah HRD Alex Rivera. Kandidat untuk posisi ${position} (pengalaman: ${experience}) mengakhiri sesi wawancara di tengah jalan (wawancara tidak diselesaikan hingga selesai).
+  const prompt = `Anda adalah pewawancara kerja Elon Musk. Kandidat untuk posisi ${position} (pengalaman: ${experience}) mengakhiri sesi wawancara di tengah jalan (wawancara tidak diselesaikan hingga selesai).
 Berikut transkrip percakapan sejauh ini:
-${chatHistory.map(entry => `${entry.sender === 'user' ? 'Kandidat' : 'HRD Alex'}: ${entry.message}`).join('\n')}
+${chatHistory.map(entry => `${entry.sender === 'user' ? 'Kandidat' : 'Elon Musk'}: ${entry.message}`).join('\n')}
 
 Tugas Anda:
 Berikan evaluasi objektif APA ADANYA berdasarkan HANYA jawaban yang sudah diberikan oleh kandidat di atas.

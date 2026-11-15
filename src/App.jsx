@@ -109,7 +109,7 @@ function App() {
       // HRD Elon Musk membacakan ucapan penutup realistis sebelum beralih ke halaman hasil
       const candidateName = userData?.name || 'Kandidat';
       const closings = [
-        `Baik, terima kasih banyak atas waktu dan jawaban yang Anda berikan, ${candidateName}. Pertanyaan dari saya sudah cukup untuk menilai kompetensi teknis dan pemecahan masalah Anda. Sekarang saya sedang menyusun lembar evaluasi akhir Anda. Mari kita lihat hasilnya bersama.`,
+        `Baik, terima kasih banyak atas waktu dan jawaban yang Anda berikan, ${candidateName}. Pertanyaan dari saya sudah cukup untuk menilai kompetensi dan kemampuan pemecahan masalah Anda. Sekarang saya sedang menyusun lembar evaluasi akhir Anda. Mari kita lihat hasilnya bersama.`,
         `Terima kasih ${candidateName}. Pemaparan Anda hari ini sangat lugas dan terstruktur. Semua aspek yang saya butuhkan sudah tercatat dengan lengkap. Saya akan mengompilasi hasil penilaian wawancara Anda sekarang. Mari kita tinjau evaluasinya.`,
         `Bagus sekali, ${candidateName}. Diskusi kita hari ini memberi saya gambaran yang sangat jelas mengenai keahlian dan cara berpikir Anda. Sesi wawancara telah selesai, dan laporan evaluasi performa Anda siap ditampilkan sekarang.`
       ];
@@ -157,14 +157,14 @@ function App() {
     // Salam pembuka disesuaikan secara cerdas:
     // Jika TIDAK ADA pengalaman kerja / fresh graduate -> JANGAN tanya pengalaman kerja, fokus ke motivasi, pendidikan & proyek
     const freshGradGreetings = [
-      `Halo ${data.name}, selamat datang. Saya Elon Musk. Mari kita mulai wawancara untuk posisi ${data.position}. Sebagai fresh graduate, ceritakan motivasi Anda dan proyek paling menantang yang pernah Anda kembangkan.`,
-      `Selamat datang ${data.name}. Saya Elon Musk. Senang bertemu dengan Anda untuk posisi ${data.position}. Silakan perkenalkan diri Anda, latar belakang pendidikan, serta keahlian teknis utama yang Anda miliki.`,
+      `Halo ${data.name}, selamat datang. Saya Elon Musk. Mari kita mulai wawancara untuk posisi ${data.position}. Sebagai fresh graduate, ceritakan motivasi Anda dan proyek atau pencapaian paling menantang yang pernah Anda kerjakan.`,
+      `Selamat datang ${data.name}. Saya Elon Musk. Senang bertemu dengan Anda untuk posisi ${data.position}. Silakan perkenalkan diri Anda, latar belakang pendidikan, serta keahlian utama yang Anda miliki di bidang ini.`,
       `Halo ${data.name}, terima kasih telah hadir untuk posisi ${data.position}. Silakan mulai dengan menceritakan bidang keahlian yang paling Anda minati serta alasan Anda tertarik berkarier di bidang ini.`
     ];
 
-    // Jika MEMILIKI pengalaman kerja nyata -> Tanyakan masalah teknis & kontribusi nyata
+    // Jika MEMILIKI pengalaman kerja nyata -> Tanyakan tantangan kerja & kontribusi nyata
     const experiencedGreetings = [
-      `Halo ${data.name}, selamat datang. Saya Elon Musk. Mari kita bahas posisi ${data.position}. Ceritakan masalah teknis paling sulit yang pernah Anda hadapi dan bagaimana Anda memecahkannya.`,
+      `Halo ${data.name}, selamat datang. Saya Elon Musk. Mari kita bahas posisi ${data.position}. Ceritakan tantangan atau masalah paling sulit yang pernah Anda hadapi dalam pekerjaan Anda dan bagaimana Anda menyelesaikannya.`,
       `Selamat datang ${data.name}. Saya senang bertemu dengan Anda hari ini untuk posisi ${data.position}. Bisakah Anda memperkenalkan latar belakang profesional dan keahlian utama Anda?`,
       `Halo ${data.name}, terima kasih telah meluangkan waktu untuk posisi ${data.position}. Silakan mulai dengan menceritakan pengalaman kerja Anda yang paling berdampak.`
     ];

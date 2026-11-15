@@ -5,6 +5,7 @@ import StatCard from './StatCard';
 import InterviewHistory from './InterviewHistory';
 import InterviewTips from './InterviewTips';
 import UserProfileView from './UserProfileView';
+import InterviewProgressChart from './InterviewProgressChart';
 import { 
   PlayCircle, 
   BookOpen, 
@@ -12,6 +13,7 @@ import {
   Clock, 
   BarChart3, 
   TrendingUp, 
+  TrendingDown,
   ArrowLeft, 
   ArrowRight, 
   Briefcase,
@@ -215,15 +217,30 @@ export default function Dashboard({
 
                 <StatCard 
                   title="Perkembangan Skor"
-                  value={stats.scoreGrowth > 0 ? `+${stats.scoreGrowth}` : `${stats.scoreGrowth}`}
+                  value={
+                    stats.growthDirection === 'up'
+                      ? `+${stats.scoreGrowth}`
+                      : stats.growthDirection === 'down'
+                        ? `-${stats.scoreGrowth}`
+                        : `${stats.scoreGrowth}`
+                  }
                   unit="Poin"
-                  icon={TrendingUp}
-                  trend={stats.growthDirection === 'up' ? `+${stats.scoreGrowth} Poin` : stats.growthDirection === 'down' ? `-${stats.scoreGrowth} Poin` : "Tetap"}
+                  icon={stats.growthDirection === 'down' ? TrendingDown : TrendingUp}
+                  trend={
+                    stats.growthDirection === 'up'
+                      ? `+${stats.scoreGrowth} Poin`
+                      : stats.growthDirection === 'down'
+                        ? `-${stats.scoreGrowth} Poin`
+                        : "Tetap"
+                  }
                   trendDirection={stats.growthDirection}
                   trendLabel="Dibanding sesi lalu"
-                  gradientTheme="green"
+                  gradientTheme={stats.growthDirection === 'down' ? 'red' : 'green'}
                 />
               </section>
+
+              {/* Grafik Perkembangan Skor Interview */}
+              <InterviewProgressChart history={history} />
 
               {/* 2 Kolom Bawah: Riwayat Interview & Panduan Wawancara (Sesuai Mockup Gambar) */}
               <section className="dashboard-bottom-two-col">

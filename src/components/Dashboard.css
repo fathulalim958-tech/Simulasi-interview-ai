@@ -755,6 +755,10 @@
   color: var(--accent-green);
 }
 
+.stat-card.theme-red .stat-icon-wrapper {
+  color: #ef4444;
+}
+
 .stat-card.theme-amber .stat-icon-wrapper {
   color: var(--accent-amber);
 }
