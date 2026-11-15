@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { User, Briefcase, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
+import { User, Briefcase, FileText, ArrowRight, ArrowLeft, Edit3 } from 'lucide-react';
 import './FormInput.css';
 
 export default function FormInput({ onStart, onBack }) {
   const [name, setName] = useState('');
   const [experience, setExperience] = useState('');
   const [position, setPosition] = useState('');
+  const [customPosition, setCustomPosition] = useState('');
+
+  const isCustom = position === 'CUSTOM';
+  const effectivePosition = isCustom ? customPosition.trim() : position;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (name.trim() && experience.trim() && position) {
+    if (name.trim() && experience.trim() && effectivePosition) {
       // Buka kunci AudioContext / SpeechSynthesis dalam event klik pengguna
       if ('speechSynthesis' in window) {
         window.speechSynthesis.resume();
@@ -17,7 +21,7 @@ export default function FormInput({ onStart, onBack }) {
       onStart({ 
         name: name.trim(), 
         experience: experience.trim(), 
-        position 
+        position: effectivePosition
       });
     } else {
       alert('Harap lengkapi seluruh field (Nama, Pengalaman, dan Posisi) sebelum memulai wawancara!');
@@ -100,15 +104,62 @@ export default function FormInput({ onStart, onBack }) {
               required
             >
               <option value="">-- Pilih Posisi Pekerjaan --</option>
-              <option value="Web Developer">Web Developer (Frontend / Fullstack)</option>
-              <option value="Backend Developer">Backend Developer</option>
-              <option value="UI/UX Designer">UI/UX Designer</option>
-              <option value="Business Analyst">Business Analyst</option>
-              <option value="System Analyst">System Analyst</option>
-              <option value="Data Scientist">Data Scientist</option>
-              <option value="QA Tester">QA Tester / Automation</option>
-              <option value="Mobile App Developer">Mobile App Developer</option>
+
+              <optgroup label="💻 Teknologi & Software (IT)">
+                <option value="Web Developer">Web Developer (Frontend / Fullstack)</option>
+                <option value="Backend Developer">Backend Developer</option>
+                <option value="Mobile App Developer">Mobile App Developer</option>
+                <option value="UI/UX Designer">UI/UX Designer</option>
+                <option value="Data Scientist">Data Scientist / AI Engineer</option>
+                <option value="Business Analyst">Business Analyst</option>
+                <option value="System Analyst">System Analyst</option>
+                <option value="QA Tester">QA Tester / Automation</option>
+              </optgroup>
+
+              <optgroup label="💼 Bisnis, Keuangan & HR">
+                <option value="Staff Akuntansi & Keuangan">Staff Akuntansi & Keuangan (Finance & Accounting)</option>
+                <option value="Human Resources (HR) Specialist">Human Resources (HR) / Talent Acquisition</option>
+              </optgroup>
+
+              <optgroup label="📢 Pemasaran & Media Kreatif">
+                <option value="Digital Marketing Specialist">Digital Marketing Specialist</option>
+                <option value="Content Writer & Copywriter">Content Writer / Copywriter</option>
+              </optgroup>
+
+              <optgroup label="🤝 Penjualan & Pelayanan (Frontliner)">
+                <option value="Sales & Business Development">Sales & Business Development Executive</option>
+                <option value="Customer Service Specialist">Customer Service / Support Specialist</option>
+              </optgroup>
+
+              <optgroup label="📋 Administrasi & Operasional">
+                <option value="Staff Administrasi Perkantoran">Staff Administrasi Perkantoran</option>
+                <option value="Supply Chain & Logistik Officer">Supply Chain & Logistik Officer</option>
+              </optgroup>
+
+              <optgroup label="✨ Posisi Lainnya">
+                <option value="CUSTOM">➕ Lainnya (Ketik Posisi Sendiri...)</option>
+              </optgroup>
             </select>
+
+            {/* Input Tambahan Jika Memilih 'Lainnya' */}
+            {isCustom && (
+              <div className="custom-position-wrapper" style={{ marginTop: '10px' }}>
+                <div className="input-label-wrapper" style={{ color: '#60a5fa' }}>
+                  <Edit3 size={12} />
+                  <label htmlFor="custom-position-input">Ketik Nama Posisi Spesifik</label>
+                </div>
+                <input
+                  id="custom-position-input"
+                  type="text"
+                  value={customPosition}
+                  onChange={(e) => setCustomPosition(e.target.value)}
+                  className="form-input"
+                  placeholder="Misal: Guru Bahasa Inggris, Barista, Staff Gudang, Desainer Grafis..."
+                  required
+                  autoFocus
+                />
+              </div>
+            )}
           </div>
 
           {/* Pengalaman Kerja */}

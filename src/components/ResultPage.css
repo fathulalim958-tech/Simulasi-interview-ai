@@ -291,6 +291,7 @@
   box-shadow: 0 6px 25px rgba(37, 99, 235, 0.5);
 }
 
+.action-btn-secondary,
 .print-report-btn {
   display: flex;
   align-items: center;
@@ -306,9 +307,38 @@
   transition: all 0.2s;
 }
 
+.action-btn-secondary:hover,
 .print-report-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
+}
+
+.btn-download-pdf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  padding: 14px 22px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.94rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+}
+
+.btn-download-pdf:hover {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.45);
+}
+
+.btn-download-pdf:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ==========================================================================
@@ -585,11 +615,18 @@
   .transcript-section {
     background: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
-    break-inside: avoid;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
   }
   .transcript-body {
+    display: block !important;
     max-height: none !important;
     overflow: visible !important;
+  }
+  .transcript-row {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 10px !important;
   }
   .transcript-row.row-ai {
     align-items: flex-start !important;
